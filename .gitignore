@@ -1,5 +1,5 @@
 # virtualenv
-.* #mac and cygwin uses different venv
+.env
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

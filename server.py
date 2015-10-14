@@ -10,8 +10,12 @@ conn, addr = s.accept()	# conn is the new socket. addr is the client addr
 print("Connected by", addr) # why can't i use %s?
 
 while True:
-	data = conn.recv(1024) # bufsize should be a small power of 2 like 4096
-	if not data:
-		break
-	conn.sendall(data)
+    data = conn.recv(1024) # bufsize should be a small power of 2 like 4096
+    if not data:
+        break
+    print("Client:", data.decode())
+
+    msg = input('msg to send:').encode()
+    conn.sendall(msg)
+
 conn.close()

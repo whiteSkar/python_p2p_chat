@@ -6,10 +6,8 @@ def client_handler(conn):
         data = conn.recv(1024) # bufsize should be a small power of 2 like 4096
         if not data:
             break
-        print("Client:", data.decode())
 
-        #msg = input('msg to send:').encode()
-        #conn.sendall(msg)
+        conn.sendall(data)
     
 
 HOST = ''

@@ -43,7 +43,6 @@ class Client(tk.Frame):
 
 root = tk.Tk()
 client = Client(master=root)
-
 client.mainloop()
 
 

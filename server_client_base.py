@@ -17,6 +17,9 @@ class ServerClientBase(metaclass=ABCMeta):
                 return msgs
         return msgs
 
+    def recv_handler(self, sock):
+        raise NotImplemented()
+
     def send_msg(self, msg):
         raise NotImplemented()
 

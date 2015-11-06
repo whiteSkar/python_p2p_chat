@@ -20,7 +20,6 @@ class P2pChat(tk.Frame):
         
         if messagebox.askyesno("", "Are you hosting the chat room?"):
             self.chat = server.Server(None, PORT)
-            self.chat.run()
         else:
             self.chat = client.Client(HOST, PORT)
 

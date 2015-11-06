@@ -13,41 +13,52 @@ class Server(scb.ServerClientBase):
         print("Server binded on port:", port)
 
         self.connections = {}
+        
+        th = threading.Thread(target=self.new_conn_handler)
+        th.start()
     
     def send_msg(self, msg):
-        for conn in self.connections:
-            try:
-                conn.sendall(msg.encode())
-            except:
-                conn.close()
-                self.connections.remove(conn)
+        if not msg:
+            return
+        msg = msg.encode()
+        self.msg_queue.put(msg) # Display what I am sending on my gui
         
+        # It is okay if recv_handler thread comes in at this point and
+        #   sends what it received first, resulting in discrepancy
+        #   between my gui and the client's gui
+        for sock in self.connections:
+            try:
+                sock.sendall(msg)
+            except:
+                sock.close()
+                del self.connections[sock]
+
     def destroy(self):
         for conn in self.connections.keys():
             conn.close()
         self.s.close()
    
-    def run(self):
-        th = threading.Thread(target=self.incoming_handler)
-        th.start()
-        
-    def client_handler(self, conn):
+    def recv_handler(self, sock):
         while True:
-            data = conn.recv(1024) # bufsize should be a small power of 2 like 4096
-            if not data:
+            msg = sock.recv(1024)
+            if not msg:
                 break
             
-            # send to all connections. caution for threading 
-            conn.sendall(data)
+            # TODO: send to all connections. caution for threading 
+            sock.sendall(msg)
+            self.msg_queue.put(msg)
     
-    def incoming_handler(self):
+    def new_conn_handler(self):
         while True:
-            self.s.listen(1)	# maximum # of queued connections
-            conn, addr = self.s.accept()	# conn is the new socket. addr is the client addr
-            self.connections[conn] = addr
-            print("Connected by", addr) # why can't i use %s?
-            
-            th = threading.Thread(target=self.client_handler, kwargs={'conn': conn})
-            th.start()
+            try:
+                self.s.listen(1)	# maximum # of queued connections
+                sock, addr = self.s.accept() 
+                self.connections[sock] = addr
+                print("Connected by", addr) # why can't i use %s?
+                
+                th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
+                th.start()
+            except:
+                break
 
         

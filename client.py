@@ -1,30 +1,21 @@
 import threading
+import server_client_base as scb 
 import socket
-import queue
 
 
-class Client():
+class Client(scb.ServerClientBase):
     def __init__(self, host_ip, port):
+        super().__init__(host_ip, port)
+        print("start")
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((host_ip, port))
-
-        self.msg_queue = queue.Queue()
+        print("done")
 
         th = threading.Thread(target=self.server_handler)
         th.start()
 
-    def get_new_msgs(self):
-        msgs = []
-        while not self.msg_queue.empty():
-            try:
-                msg = self.msg_queue.get(block=False)
-                msgs.append(msg)
-            except queue.Empty():
-                return msgs
-        return msgs
-
     def send_msg(self, msg):
-        self.s.sendall((msg).encode())
+        self.s.sendall(msg.encode())
         
     def destroy(self):
         self.s.close()

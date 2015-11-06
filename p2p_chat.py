@@ -1,5 +1,6 @@
 import tkinter as tk
 import client
+import server
 
 from tkinter import messagebox
 from tkinter import scrolledtext
@@ -9,15 +10,19 @@ HOST = '127.0.0.1'	# local host?
 PORT = 50007	# same as server
 
 
-class P2P_chat(tk.Frame):
+class P2pChat(tk.Frame):
     def __init__(self, master=None):
         master.protocol("WM_DELETE_WINDOW", self.close_app)
         
         tk.Frame.__init__(self, master)
         self.pack()
         self.createWidgets()
-         
-        self.client = client.Client(HOST, PORT)
+        
+        if messagebox.askyesno("", "Are you hosting the chat room?"):
+            self.chat = server.Server(None, PORT)
+            self.chat.run()
+        else:
+            self.chat = client.Client(HOST, PORT)
         
         self.display_new_msg()
 
@@ -35,7 +40,7 @@ class P2P_chat(tk.Frame):
         self.send_button.pack(side=tk.RIGHT)
 
     def display_new_msg(self):
-        msgs = self.client.get_new_msgs()
+        msgs = self.chat.get_new_msgs()
         for msg in msgs:
             self.msg_window.config(state=tk.NORMAL)
             self.msg_window.insert(tk.END, "%s\n" % msg.decode())
@@ -46,16 +51,15 @@ class P2P_chat(tk.Frame):
     def send_msg(self):
         msg = self.msg_entry.get()
         self.msg_entry.delete(0, tk.END)
-        self.client.send_msg(msg)
+        self.chat.send_msg(msg)
 
     def close_app(self):
-        #if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.client.destroy()
-            root.destroy()
+        self.chat.destroy()
+        root.destroy()
 
 
 root = tk.Tk()
-p2p_chat = P2P_chat(master=root)
+p2p_chat = P2pChat(master=root)
 p2p_chat.mainloop()
 
 

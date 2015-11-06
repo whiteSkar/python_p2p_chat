@@ -23,7 +23,8 @@ class P2pChat(tk.Frame):
             self.chat.run()
         else:
             self.chat = client.Client(HOST, PORT)
-        
+
+        master.bind('<Return>', self.send_msg)
         self.display_new_msg()
 
     def createWidgets(self):
@@ -48,7 +49,7 @@ class P2pChat(tk.Frame):
             self.msg_window.config(state=tk.DISABLED)
         self.master.after(100, self.display_new_msg)
 
-    def send_msg(self):
+    def send_msg(self, event=None):
         msg = self.msg_entry.get()
         self.msg_entry.delete(0, tk.END)
         self.chat.send_msg(msg)

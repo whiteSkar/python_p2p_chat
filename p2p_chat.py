@@ -55,10 +55,15 @@ class P2pChat(tk.Frame):
         
         ip_label = tk.Label(ip_frame, text="ip:")
         ip_label.pack(side=tk.LEFT)
-        
-        self.ip_entry = tk.Entry(ip_frame, width=14)
-        self.ip_entry.pack(side=tk.LEFT)
-        self.ip_entry.insert(0, '') 
+       
+        vcmd = (self.register(self.validate_entry_len), '%P', '%W')
+       
+        ip_max_len = 15
+        ip_entry = tk.Entry(ip_frame, width=ip_max_len, \
+                            validate='key', vcmd=vcmd)
+        ip_entry.pack(side=tk.LEFT)
+        ip_entry.insert(0, '') 
+        self.ip_entry = ip_entry
 
         # Port Frame
         port_frame = tk.Frame(ip_port_frame)
@@ -67,9 +72,12 @@ class P2pChat(tk.Frame):
         port_label = tk.Label(port_frame, text="port:")
         port_label.pack(side=tk.LEFT)
 
-        self.port_entry = tk.Entry(port_frame, width=6)
-        self.port_entry.pack(side=tk.LEFT)
-        self.port_entry.insert(0, DEFAULT_PORT)
+        port_max_len = 5
+        port_entry = tk.Entry(port_frame, width=port_max_len, \
+                              validate='key', vcmd=vcmd)
+        port_entry.pack(side=tk.LEFT)
+        port_entry.insert(0, DEFAULT_PORT)
+        self.port_entry = port_entry
 
         # Host Instruction Label
         self.host_instr_label = tk.Label(ip_port_frame, \
@@ -112,6 +120,15 @@ class P2pChat(tk.Frame):
     def close_app(self):
         self.chat.destroy()
         root.destroy()
+
+    def validate_entry_len(self, P, W):
+        entry = self.master.nametowidget(W)
+        if len(P) <= entry['width']:
+            return True
+
+        self.bell()
+        return False
+        
 
 
 root = tk.Tk()

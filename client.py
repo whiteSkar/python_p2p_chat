@@ -24,8 +24,11 @@ class Client(scb.ServerClientBase):
         if not msg:
             return
         try:
+            self.msg_queue.put("send_msg is called".encode())
             self.s.sendall(msg.encode())
+            self.msg_queue.put("send_msg is done!!".encode())
         except:
+            self.msg_queue.put("Error while send_msg".encode())
             # TODO throw custom exception and let caller catch and display error
             pass
         

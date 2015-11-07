@@ -23,7 +23,11 @@ class Client(scb.ServerClientBase):
     def send_msg(self, msg):
         if not msg:
             return
-        self.s.sendall(msg.encode())
+        try:
+            self.s.sendall(msg.encode())
+        except:
+            # TODO throw custom exception and let caller catch and display error
+            pass
         
     def destroy(self):
         self.s.close()

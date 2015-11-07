@@ -53,17 +53,25 @@ class Server(scb.ServerClientBase):
         
         msg = self.__user_name + ': ' + msg
         msg = msg.encode()
-        self.msg_queue.put(msg) # Display what I am sending on my gui
         
         with self.lock:
-            for sock in self.__connections.keys():
-                try:
-                    sock.sendall(msg)
-                except:
-                    dis_msg = self.__connections[sock].name + "is disconnected" 
-                    self.msg_queue.put(dis_msg.encode())
-                    sock.close()
-                    del self.__connections[sock]
+            self.send_msg_to_all(msg)
+
+    # Pre: call with lock for thread safety
+    def send_msg_to_all(self, msg):
+        disconnected = []
+        for sock in self.__connections.keys():
+            try:
+                sock.sendall(msg)
+            except:
+                # Not sure if there will be any case
+                disconnected.append(sock)
+        for sock in disconnected:
+            self.handle_disconnected(sock)
+
+        # To ensure what I see is what they see
+        self.msg_queue.put(msg)
+
 
     def destroy(self):
         with self.lock:
@@ -75,44 +83,43 @@ class Server(scb.ServerClientBase):
         while True:
             msg = sock.recv(1024)
             if not msg:
-                print("no msg received")
+                with self.lock:
+                    self.handle_disconnected(sock)
                 break
-            self.msg_queue.put('received msg'.encode() + msg)
 
-            # combine this code with send_msg
             with self.lock:
                 msg_user_name = self.__connections[sock].name + ': '
                 msg = msg_user_name.encode() + msg
                 
-                for sock in self.__connections.keys():
-                    try:
-                        sock.sendall(msg)
-                    except:
-                        dis_msg = self.__connections[sock].name + "is disconnected" 
-                        self.msg_queue.put(dis_msg.encode())
-                        sock.close()
-                        # should not delete while iterating.
-                        del self.__connections[sock]
+                self.send_msg_to_all(msg)
 
-                # To ensure what I see is what they see
-                self.msg_queue.put(msg)
     
     def new_conn_handler(self):
         while True:
             try:
-                self.s.listen(1)	# maximum # of queued __connections
+                self.s.listen(5)
                 sock, addr = self.s.accept() 
-                #sock.setblocking(False)
 
                 user = User(addr[0])
                 
                 with self.lock:
                     self.__connections[sock] = user
+                self.show_msg(user.name + " has joined the room")
                 print("Connected by", addr)
                 
                 th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
                 th.start()
             except:
                 break
+    
+    # Pre: call with lock for thread safety
+    def handle_disconnected(self, sock):
+        dis_msg = self.__connections[sock].name + " is disconnected" 
+        self.msg_queue.put(dis_msg.encode())
+        sock.close()
+        del self.__connections[sock]
 
+
+    def show_msg(self, msg):
+        self.msg_queue.put(msg.encode())
         

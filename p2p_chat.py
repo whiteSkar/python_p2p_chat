@@ -39,6 +39,7 @@ class P2pChat(tk.Frame):
             self.chat = client.Client(host_name, port)
 
         master.bind('<Return>', self.send_msg)
+        master.bind('<KP_Enter>', self.send_msg)
         self.display_new_msg()
 
     def createWidgets(self):

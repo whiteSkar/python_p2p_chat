@@ -8,14 +8,23 @@ class Server(scb.ServerClientBase):
         super().__init__(host_ip, port)
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #host_name = socket.gethostname()
-        self.s.bind(('', port))
-        print("Server binded on port:", port)
-
+        # TODO: host_name = socket.gethostname()
+        self.__host_name = ''
+        self.__port = port
+        self.s.bind((self.__host_name, self.__port))
+        # TODO: automatic change of port if port is being used
         self.connections = {}
         
         th = threading.Thread(target=self.new_conn_handler)
         th.start()
+
+    @property
+    def host_name(self):
+        return self.__host_name
+
+    @property
+    def port(self):
+        return self.__port
     
     def send_msg(self, msg):
         if not msg:

@@ -15,29 +15,74 @@ class P2pChat(tk.Frame):
         master.protocol("WM_DELETE_WINDOW", self.close_app)
         
         tk.Frame.__init__(self, master)
-        self.pack()
+        self.pack(fill=tk.BOTH, expand=1)
         self.createWidgets()
         
         if messagebox.askyesno("", "Are you hosting the chat room?"):
             self.chat = server.Server(None, PORT)
+            
+            self.ip_entry.delete(0, tk.END)
+            self.ip_entry.insert(0, self.chat.host_name)
+            self.ip_entry.config(state=tk.DISABLED)
+            
+            self.port_entry.delete(0, tk.END)
+            self.port_entry.insert(0, self.chat.port)
+            self.port_entry.config(state=tk.DISABLED)
         else:
-            self.chat = client.Client(HOST, PORT)
+            host_name = self.ip_entry.get()
+            # TODO: validate whether port is integer
+            port = int(self.port_entry.get())
+            self.chat = client.Client(host_name, port)
 
         master.bind('<Return>', self.send_msg)
         self.display_new_msg()
 
     def createWidgets(self):
-        self.msg_window = scrolledtext.ScrolledText(self, height=10, width=80)
-        self.msg_window.pack(side=tk.TOP)
+        # IP and Port Frame
+        ip_port_frame = tk.Frame(self, relief=tk.RAISED, bd=1)
+        ip_port_frame.pack(side=tk.TOP, fill=tk.X)
+
+        # IP Frame
+        ip_frame = tk.Frame(ip_port_frame)
+        ip_frame.pack(side=tk.LEFT)
+        
+        ip_label = tk.Label(ip_frame, text="ip:")
+        ip_label.pack(side=tk.LEFT)
+        
+        self.ip_entry = tk.Entry(ip_frame, width=14)
+        self.ip_entry.pack(side=tk.LEFT)
+        self.ip_entry.insert(0, HOST) 
+
+        # Port Frame
+        port_frame = tk.Frame(ip_port_frame)
+        port_frame.pack(side=tk.LEFT)
+
+        port_label = tk.Label(port_frame, text="port:")
+        port_label.pack(side=tk.LEFT)
+
+        self.port_entry = tk.Entry(port_frame, width=6)
+        self.port_entry.pack(side=tk.LEFT)
+        self.port_entry.insert(0, PORT)
+       
+        # msg dialogue and entry frame 
+        msg_frame = tk.Frame(self)
+        msg_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+        self.msg_window = scrolledtext.ScrolledText(msg_frame, height=10, width=80)
+        self.msg_window.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
         self.msg_window.config(state=tk.DISABLED)
         
-        self.msg_entry = tk.Entry(self,width=70)
-        self.msg_entry.pack(side=tk.LEFT)
+        # msg entry frame
+        msg_entry_frame = tk.Frame(msg_frame, relief=tk.RAISED, bd=1)
+        msg_entry_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=1)
 
-        self.send_button = tk.Button(self)
-        self.send_button["text"] = "Send"
-        self.send_button["command"] = self.send_msg
-        self.send_button.pack(side=tk.RIGHT)
+        self.msg_entry = tk.Entry(msg_entry_frame)
+        self.msg_entry.pack(side=tk.LEFT, fill=tk.X, expand=1)
+
+        send_button = tk.Button(msg_entry_frame)
+        send_button["text"] = "Send"
+        send_button["command"] = self.send_msg
+        send_button.pack(side=tk.RIGHT)
 
     def display_new_msg(self):
         msgs = self.chat.get_new_msgs()

@@ -6,12 +6,13 @@ from tkinter import messagebox
 from tkinter import scrolledtext
 
 
-HOST = '127.0.0.1'	# local host?
-PORT = 50007	# same as server
+DEFAULT_PORT = 50000
 
 
 class P2pChat(tk.Frame):
     def __init__(self, master=None):
+        global DEFAULT_PORT
+
         master.protocol("WM_DELETE_WINDOW", self.close_app)
         
         tk.Frame.__init__(self, master)
@@ -19,15 +20,18 @@ class P2pChat(tk.Frame):
         self.createWidgets()
         
         if messagebox.askyesno("", "Are you hosting the chat room?"):
-            self.chat = server.Server(None, PORT)
+            self.chat = server.Server(DEFAULT_PORT)
             
             self.ip_entry.delete(0, tk.END)
             self.ip_entry.insert(0, self.chat.host_name)
-            self.ip_entry.config(state=tk.DISABLED)
+            self.ip_entry.config(state='readonly')
             
             self.port_entry.delete(0, tk.END)
             self.port_entry.insert(0, self.chat.port)
-            self.port_entry.config(state=tk.DISABLED)
+            self.port_entry.config(state='readonly')
+
+            self.host_instr_label.pack(side=tk.LEFT)
+            # TODO: remove when connected self.host_instr_label.pack_forget()
         else:
             host_name = self.ip_entry.get()
             # TODO: validate whether port is integer
@@ -38,6 +42,8 @@ class P2pChat(tk.Frame):
         self.display_new_msg()
 
     def createWidgets(self):
+        global DEFAULT_PORT
+
         # IP and Port Frame
         ip_port_frame = tk.Frame(self, relief=tk.RAISED, bd=1)
         ip_port_frame.pack(side=tk.TOP, fill=tk.X)
@@ -51,7 +57,7 @@ class P2pChat(tk.Frame):
         
         self.ip_entry = tk.Entry(ip_frame, width=14)
         self.ip_entry.pack(side=tk.LEFT)
-        self.ip_entry.insert(0, HOST) 
+        self.ip_entry.insert(0, '') 
 
         # Port Frame
         port_frame = tk.Frame(ip_port_frame)
@@ -62,7 +68,11 @@ class P2pChat(tk.Frame):
 
         self.port_entry = tk.Entry(port_frame, width=6)
         self.port_entry.pack(side=tk.LEFT)
-        self.port_entry.insert(0, PORT)
+        self.port_entry.insert(0, DEFAULT_PORT)
+
+        # Host Instruction Label
+        self.host_instr_label = tk.Label(ip_port_frame, \
+            text="<-- Tell your friend this ip and port")
        
         # msg dialogue and entry frame 
         msg_frame = tk.Frame(self)

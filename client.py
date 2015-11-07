@@ -5,7 +5,7 @@ import socket
 
 class Client(scb.ServerClientBase):
     def __init__(self, host_ip, port):
-        super().__init__(host_ip, port)
+        super().__init__()
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((host_ip, port))

@@ -4,15 +4,21 @@ import socket
 
 
 class Server(scb.ServerClientBase):
-    def __init__(self, host_ip, port):
-        super().__init__(host_ip, port)
+    def __init__(self, port):
+        super().__init__()
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # TODO: host_name = socket.gethostname()
-        self.__host_name = ''
-        self.__port = port
-        self.s.bind((self.__host_name, self.__port))
-        # TODO: automatic change of port if port is being used
+        host_name = ''
+        while True:
+            try:
+                self.s.bind((host_name, port))
+                self.__host_name = host_name 
+                self.__port = port
+                break
+            except:
+                port += 1
+
         self.connections = {}
         
         th = threading.Thread(target=self.new_conn_handler)

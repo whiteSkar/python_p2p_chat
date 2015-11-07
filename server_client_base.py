@@ -4,7 +4,7 @@ import queue
 
 
 class ServerClientBase(metaclass=ABCMeta):
-    def __init__(self, host_ip, port):
+    def __init__(self):
         self.msg_queue = queue.Queue()
 
     def get_new_msgs(self):

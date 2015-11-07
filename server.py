@@ -1,6 +1,7 @@
 import threading
 import server_client_base as scb
 import socket
+import sys
 
 
 class User():
@@ -57,13 +58,33 @@ class Server(scb.ServerClientBase):
         with self.lock:
             self.send_msg_to_all(msg)
 
-    # Pre: call with lock for thread safety
+    def send_sys_msg_to_one_user(self, sock, msg):
+        if not msg:
+            return
+
+        msg = 'SYSTEM: ' + msg
+        msg = msg.encode()
+
+        sock.sendall(msg) 
+
+    def send_sys_msg_to_all(self, msg):
+        if not msg:
+            return
+
+        msg = 'SYSTEM: ' + msg
+        msg = msg.encode()
+        
+        self.send_msg_to_all(msg)
+
+    # Pre: Call with lock for thread safety
     def send_msg_to_all(self, msg):
         disconnected = []
         for sock in self.__connections.keys():
             try:
                 sock.sendall(msg)
             except:
+                print("error:", sys.exc_info()[0])
+                raise
                 # Not sure if there will be any case
                 disconnected.append(sock)
         for sock in disconnected:
@@ -82,18 +103,49 @@ class Server(scb.ServerClientBase):
     def recv_handler(self, sock):
         while True:
             msg = sock.recv(1024)
-            if not msg:
+            msg = msg.decode()
+            msg_type = self.determine_msg_type(msg)
+
+            if msg_type == 1:
                 with self.lock:
                     self.handle_disconnected(sock)
-                break
+            elif msg_type == 2:
+                with self.lock:
+                    self.change_user_name(sock, msg[4:])
+            else:
+                with self.lock:
+                    msg_user_name = self.__connections[sock].name + ': '
+                    msg = msg_user_name + msg
+                    
+                    self.send_msg_to_all(msg.encode())
 
-            with self.lock:
-                msg_user_name = self.__connections[sock].name + ': '
-                msg = msg_user_name.encode() + msg
-                
-                self.send_msg_to_all(msg)
+    # Pre: Call with lock for thread safety
+    def change_user_name(self, user_sock, new_user_name):
+        # TODO: validate user name
 
-    
+        for sock, user in self.__connections.items():
+            if user.name == new_user_name and sock is not user_sock:
+                self.send_sys_msg_to_one_user(user_sock, 'Name taken')
+                return
+        
+        if self.__connections[user_sock].name == new_user_name:
+            self.send_sys_msg_to_one_user(user_sock, 'Already your name')
+            return
+
+        sys_msg = 'User ' + self.__connections[user_sock].name
+        self.__connections[user_sock].name = new_user_name
+        sys_msg += ' changed user name to ' + new_user_name
+        self.send_sys_msg_to_all(sys_msg)
+
+    def determine_msg_type(self, msg):
+        if not msg:
+            return 1
+
+        if len(msg) >= 5 and msg[:4] == "/nc ":
+            return 2
+
+        return 3
+
     def new_conn_handler(self):
         while True:
             try:

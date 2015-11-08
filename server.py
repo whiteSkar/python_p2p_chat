@@ -82,8 +82,8 @@ class Server(scb.ServerClientBase):
         for sock in self.__connections.keys():
             try:
                 sock.sendall(msg)
-            except:
-                print("error:", sys.exc_info()[0])
+            except Exception as e:
+                print("error:", repr(e))
                 raise
                 # Not sure if there will be any case
                 disconnected.append(sock)

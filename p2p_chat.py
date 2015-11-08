@@ -1,6 +1,7 @@
 import tkinter as tk
 import client
 import server
+import sys
 
 from tkinter import messagebox
 from tkinter import scrolledtext
@@ -33,14 +34,57 @@ class P2pChat(tk.Frame):
             self.host_instr_label.pack(side=tk.LEFT)
             # TODO: remove when connected self.host_instr_label.pack_forget()
         else:
-            host_name = self.ip_entry.get()
-            # TODO: validate whether port is integer
-            port = int(self.port_entry.get())
-            self.chat = client.Client(host_name, port)
+            self.chat = None
+            self.ip_entry.insert(0, '0.0.0.0') # developing purpose
+            self.connect_btn.pack(side=tk.LEFT)
+
 
         master.bind('<Return>', self.send_msg)
         master.bind('<KP_Enter>', self.send_msg)
         self.display_new_msg()
+
+    def connect_to_host(self):
+        host_ip = self.ip_entry.get()
+        if not self.validate_ip(host_ip):
+            msg = "SYSTEM: ip format is invalid"
+            self.display_msg(msg.encode())
+            return
+
+        port_entry_val = self.port_entry.get()
+        if not self.validate_port(port_entry_val):
+            msg = "SYSTEM: port must be an integer where 1024<port<=65535"
+            self.display_msg(msg.encode())
+            return
+  
+        try:
+            self.chat = client.Client(host_ip, int(port_entry_val))
+            self.connect_btn.pack_forget()
+        except Exception as e:
+            msg = "SYSTEM: " + repr(e) 
+            self.display_msg(msg.encode())
+   
+    def validate_ip(self, ip):
+        parts = ip.split('.')
+        if len(parts) != 4:
+            return False
+
+        for part in parts:
+            try:
+                part = int(part)
+                if part < 0 or part > 255:
+                    return False
+            except:
+                return False
+        return True
+
+    def validate_port(self, port):
+        try:
+            port = int(port)
+            if port > 1024 and port <= 65535:
+                return True
+            return False
+        except:
+            return False
 
     def createWidgets(self):
         global DEFAULT_PORT
@@ -103,22 +147,34 @@ class P2pChat(tk.Frame):
         send_button["command"] = self.send_msg
         send_button.pack(side=tk.RIGHT)
 
+        # client connect to host button
+        connect_btn = tk.Button(ip_port_frame)
+        connect_btn["text"] = "Connect"
+        connect_btn["command"] = self.connect_to_host
+        self.connect_btn = connect_btn
+
     def display_new_msg(self):
-        msgs = self.chat.get_new_msgs()
-        for msg in msgs:
-            self.msg_window.config(state=tk.NORMAL)
-            self.msg_window.insert(tk.END, "%s\n" % msg.decode())
-            self.msg_window.yview(tk.END)
-            self.msg_window.config(state=tk.DISABLED)
+        if self.chat is not None:
+            msgs = self.chat.get_new_msgs()
+            for msg in msgs:
+                self.display_msg(msg)
         self.master.after(100, self.display_new_msg)
 
+    def display_msg(self, msg):
+        self.msg_window.config(state=tk.NORMAL)
+        self.msg_window.insert(tk.END, "%s\n" % msg.decode())
+        self.msg_window.yview(tk.END)
+        self.msg_window.config(state=tk.DISABLED)
+
     def send_msg(self, event=None):
-        msg = self.msg_entry.get()
-        self.msg_entry.delete(0, tk.END)
-        self.chat.send_msg(msg)
+        if self.chat is not None:
+            msg = self.msg_entry.get()
+            self.msg_entry.delete(0, tk.END)
+            self.chat.send_msg(msg)
 
     def close_app(self):
-        self.chat.destroy()
+        if self.chat is not None:
+            self.chat.destroy()
         root.destroy()
 
     def validate_entry_len(self, P, W):

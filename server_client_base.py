@@ -5,13 +5,13 @@ import queue
 
 class ServerClientBase(metaclass=ABCMeta):
     def __init__(self):
-        self.msg_queue = queue.Queue()
+        self._msg_queue = queue.Queue()
 
     def get_new_msgs(self):
         msgs = []
-        while not self.msg_queue.empty():
+        while not self._msg_queue.empty():
             try:
-                msg = self.msg_queue.get(block=False)
+                msg = self._msg_queue.get(block=False)
                 msgs.append(msg)
             except queue.Empty():
                 return msgs

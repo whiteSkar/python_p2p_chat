@@ -67,12 +67,10 @@ class Server(scb.ServerClientBase):
 
                 user = User(sock, addr[0], addr[1])
                 
+                msg = user.name + " has joined the room."
                 with self._lock:
                     self._users[sock] = user
-
-                # TODO: Also show below msg to other users
-                self.show_msg(user.name + " has joined the room")
-                print("Connected by", addr)
+                    self.send_msg_as_user_to_all(msg, self._system_user)
                 
                 th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
                 th.start()
@@ -169,8 +167,8 @@ class Server(scb.ServerClientBase):
 
     # Pre: call with lock for thread safety
     def handle_disconnected(self, user):
-        dis_msg = user.name + " is disconnected" 
-        self._msg_queue.put(dis_msg)
+        msg = user.name + " is disconnected" 
+        self.send_msg_as_user_to_all(msg, self._system_user)
         user.sock.close()
         del self._users[user.sock]
 

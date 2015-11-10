@@ -28,6 +28,9 @@ class User():
 
 
 class Server(scb.ServerClientBase):
+    MAX_U_NAME_LEN = 16
+    MIN_U_NAME_LEN = 4
+
     def __init__(self, port):
         super().__init__()
 
@@ -171,9 +174,21 @@ class Server(scb.ServerClientBase):
         user.sock.close()
         del self._users[user.sock]
 
+    def validate_user_name(self, user_name):
+        name_len = len(user_name)
+        if name_len > self.MAX_U_NAME_LEN or name_len < self.MIN_U_NAME_LEN:
+            return False
+        return True
+
     # Pre: Call with lock for thread safety
     def change_user_name(self, requested_user, new_user_name):
-        # TODO: validate user name
+        new_user_name = new_user_name.replace(' ', '')
+        
+        if not self.validate_user_name(new_user_name):
+            msg = "User name length must be between " + \
+                  str(self.MIN_U_NAME_LEN) + " and " + str(self.MAX_U_NAME_LEN)
+            self.send_msg_as_sys_to_user(msg, requested_user)
+            return
 
         for sock, user in self._users.items():
             if user.name == new_user_name and sock is not requested_user.sock:

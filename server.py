@@ -81,15 +81,24 @@ class Server(scb.ServerClientBase):
         if not msg:
             return
         
+        msg_type = self.determine_msg_type(msg)
+        
         with self._lock:
-            self.send_msg_as_user_to_all(msg, self._host_user)
+            if msg_type == 2:
+                self.change_user_name(self._host_user, msg[4:])
+            else:
+                self.send_msg_as_user_to_all(msg, self._host_user)
 
     def send_msg_as_sys_to_user(self, msg, to_user):
         if not msg:
             return
 
         msg = self.prepend_msg_header(msg, self._system_user)
-        self.send_msg_to_user(msg, to_user)
+        
+        if to_user is self._host_user:
+            self.show_msg(msg)
+        else:
+            self.send_msg_to_user(msg, to_user)
 
     # Pre: call with lock
     def send_msg_as_sys_to_all(self, msg):
@@ -165,7 +174,6 @@ class Server(scb.ServerClientBase):
     # Pre: Call with lock for thread safety
     def change_user_name(self, requested_user, new_user_name):
         # TODO: validate user name
-        # TODO: host can't change name right now.
 
         for sock, user in self._users.items():
             if user.name == new_user_name and sock is not requested_user.sock:

@@ -150,7 +150,7 @@ class P2pChat(tk.Frame):
 
         # msg entry frame
         msg_entry_frame = tk.Frame(msg_frame, relief=tk.RAISED, bd=1)
-        msg_entry_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=1)
+        msg_entry_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         msg_entry = tk.Entry(msg_entry_frame)
         msg_entry.pack(side=tk.LEFT, fill=tk.X, expand=1)
@@ -167,6 +167,13 @@ class P2pChat(tk.Frame):
         connect_btn["text"] = "Connect"
         connect_btn["command"] = self.connect_to_host
         self.connect_btn = connect_btn
+
+        master = self.master
+        master.update()
+        # Looks like master.winfo_height() doesn't include menubar height
+        temporary_menubar_height = 30
+        min_height = master.winfo_height() + temporary_menubar_height
+        master.minsize(master.winfo_width(), min_height)
 
     def remove_host_instr(self, event=None):
         if self.host_instr_label is not None:

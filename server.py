@@ -204,14 +204,25 @@ class Server(scb.ServerClientBase):
                   str(self.MIN_U_NAME_LEN) + " and " + str(self.MAX_U_NAME_LEN)
             self.send_msg_as_sys_to_user(msg, requested_user)
             return
-
-        for sock, user in self._users.items():
-            if user.name == new_user_name and sock is not requested_user.sock:
-                self.send_msg_as_sys_to_user('Name taken', requested_user)
-                return
         
         if requested_user.name == new_user_name:
             self.send_msg_as_sys_to_user('Already your name', requested_user)
+            return
+
+        # Host user and System user are not in the self._users dict
+        name_taken = False
+        if new_user_name == self._host_user.name or \
+           new_user_name == self._system_user.name:
+            name_taken = True
+
+        if not name_taken:
+            for user in self._users.values():
+                if user.name == new_user_name: 
+                    name_taken = True
+                    break
+
+        if name_taken:
+            self.send_msg_as_sys_to_user('Name taken', requested_user)
             return
 
         sys_msg = 'User ' + requested_user.name

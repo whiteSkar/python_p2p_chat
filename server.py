@@ -1,3 +1,5 @@
+from errno import ECONNABORTED, EBADF
+
 import threading
 import server_client_base as scb
 import socket
@@ -74,9 +76,13 @@ class Server(scb.ServerClientBase):
                 
                 th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
                 th.start()
-            except:
-                break
-    
+            except Exception as e:
+                if e.errno == ECONNABORTED:
+                    # User closed the program
+                    break
+                
+                self.send_msg_as_sys_to_user(repr(e), self._host_user)
+
     # This function is the function that gets called when GUI presses send btn
     def send_msg(self, msg):
         if not msg:
@@ -133,7 +139,7 @@ class Server(scb.ServerClientBase):
             try:
                 self.send_msg_to_user(msg, user)
             except Exception as e:
-                self.show_msg("ERROR:", repr(e))
+                self.send_msg_as_sys_to_user(repr(e), self._host_user)
 
         # To ensure what I see is what they see
         self._msg_queue.put(msg)
@@ -143,18 +149,26 @@ class Server(scb.ServerClientBase):
 
     def recv_handler(self, sock):
         while True:
-            msg = sock.recv(1024)
-            msg = msg.decode()
-            msg_type = self.determine_msg_type(msg)
+            try:
+                msg = sock.recv(1024)
+                msg = msg.decode()
+                msg_type = self.determine_msg_type(msg)
 
-            with self._lock:
-                user = self._users[sock]
-                if msg_type == 1:
-                    self.handle_disconnected(user)
-                elif msg_type == 2:
-                    self.change_user_name(user, msg[4:])
-                else:
-                    self.send_msg_as_user_to_all(msg, user)
+                with self._lock:
+                    user = self._users[sock]
+                    if msg_type == 1:
+                        self.handle_disconnected(user)
+                        break
+                    elif msg_type == 2:
+                        self.change_user_name(user, msg[4:])
+                    else:
+                        self.send_msg_as_user_to_all(msg, user)
+            except Exception as e:
+                if e.errno == EBADF:    
+                    # User closed the program
+                    break
+
+                self.send_msg_as_sys_to_user(repr(e), self._host_user)
 
     def determine_msg_type(self, msg):
         if not msg:

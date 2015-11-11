@@ -1,3 +1,5 @@
+from errno import EBADF
+
 import threading
 import server_client_base as scb 
 import socket
@@ -15,21 +17,35 @@ class Client(scb.ServerClientBase):
 
     def recv_handler(self, sock):
         while True:
-            msg = sock.recv(1024)
-            msg = msg.decode()
-            if not msg:
-                break
+            try:
+                msg = sock.recv(1024)
+                msg = msg.decode()
+                if not msg:
+                    self._msg_queue.put("SYSTEM: Host is disconnected.") 
+                    self.destroy()
+                    break
 
-            self._msg_queue.put(msg)
+                self._msg_queue.put(msg)
+            except Exception as e:
+                if e.errno == EBADF: 
+                    # User closed the program
+                    break
+
+                self._msg_queue.put("SYSTEM: " + repr(e))
 
     def send_msg(self, msg):
         if not msg:
             return
 
         try:
-            self._s.sendall(msg.encode())
+            if self._s is not None:
+                self._s.sendall(msg.encode())
+            else:
+                self._msg_queue.put(msg)
         except Exception as e:
-            self._msg_queue.put("ERROR:", repr(e))
+            self._msg_queue.put("SYSTEM: " + repr(e))
         
     def destroy(self):
-        self._s.close()
+        if self._s is not None:
+            self._s.close()
+            self._s = None

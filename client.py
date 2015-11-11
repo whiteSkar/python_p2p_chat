@@ -21,7 +21,7 @@ class Client(scb.ServerClientBase):
                 msg = sock.recv(1024)
                 msg = msg.decode()
                 if not msg:
-                    self._msg_queue.put("SYSTEM: Host is disconnected.") 
+                    self.show_sys_msg("Host is disconnected")
                     self.destroy()
                     break
 
@@ -31,7 +31,7 @@ class Client(scb.ServerClientBase):
                     # User closed the program
                     break
 
-                self._msg_queue.put("SYSTEM: " + repr(e))
+                self.show_sys_msg(repr(e))
 
     def send_msg(self, msg):
         if not msg:
@@ -43,8 +43,15 @@ class Client(scb.ServerClientBase):
             else:
                 self._msg_queue.put(msg)
         except Exception as e:
-            self._msg_queue.put("SYSTEM: " + repr(e))
-        
+            self.show_sys_msg(repr(e))
+    
+    def show_sys_msg(self, msg):
+        if not msg:
+            return
+
+        msg = "SYSTEM: " + msg + "."
+        self._msg_queue.put(msg)
+
     def destroy(self):
         if self._s is not None:
             self._s.close()

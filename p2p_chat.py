@@ -1,10 +1,10 @@
+from tkinter import messagebox
+from tkinter import scrolledtext
+
 import tkinter as tk
 import client
 import server
 import sys
-
-from tkinter import messagebox
-from tkinter import scrolledtext
 
 
 DEFAULT_PORT = 10000
@@ -46,14 +46,13 @@ class P2pChat(tk.Frame):
     def connect_to_host(self):
         host_ip = self.ip_entry.get()
         if not self.validate_ip(host_ip):
-            msg = "SYSTEM: ip format is invalid"
-            self.display_msg(msg)
+            self.show_sys_msg("ip format is invalid")
             return
 
         port_entry_val = self.port_entry.get()
         if not self.validate_port(port_entry_val):
-            msg = "SYSTEM: port must be an integer where 1024<port<=65535"
-            self.display_msg(msg)
+            msg = "port must be an integer where 1024 < port <= 65535"
+            self.show_sys_msg(msg)
             return
   
         try:
@@ -62,8 +61,7 @@ class P2pChat(tk.Frame):
             self.ip_entry.config(state='readonly')
             self.port_entry.config(state='readonly')
         except Exception as e:
-            msg = "SYSTEM: " + repr(e) 
-            self.display_msg(msg)
+            self.show_sys_msg(repr(e))
    
     def validate_ip(self, ip):
         parts = ip.split('.')
@@ -181,7 +179,14 @@ class P2pChat(tk.Frame):
 
         self.bell()
         return False
-        
+    
+    def show_sys_msg(self, msg):
+        if not msg:
+            return
+
+        msg = "SYSTEM: " + msg + "."
+        self.display_msg(msg)
+
     def close_app(self):
         if self.chat is not None:
             self.chat.destroy()
@@ -191,7 +196,4 @@ class P2pChat(tk.Frame):
 root = tk.Tk()
 p2p_chat = P2pChat(master=root)
 p2p_chat.mainloop()
-
-
-
 

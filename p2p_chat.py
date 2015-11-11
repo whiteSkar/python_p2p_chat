@@ -12,7 +12,8 @@ DEFAULT_PORT = 10000
 class P2pChat(tk.Frame):
     def __init__(self, master=None):
         global DEFAULT_PORT
-
+        
+        master.wm_title("P2P Chat")
         master.protocol("WM_DELETE_WINDOW", self.close_app)
         
         tk.Frame.__init__(self, master)

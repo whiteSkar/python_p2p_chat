@@ -1,5 +1,4 @@
-from tkinter import messagebox
-from tkinter import scrolledtext
+from tkinter import messagebox, scrolledtext, simpledialog
 
 import tkinter as tk
 import client
@@ -90,6 +89,18 @@ class P2pChat(tk.Frame):
     def createWidgets(self):
         global DEFAULT_PORT
 
+        # Menu
+        menubar = tk.Menu(self)
+        
+        menu = tk.Menu(menubar, tearoff=0)
+        menu.add_command(label="Change user name", \
+                         command=self.prompt_new_name)
+        menu.add_separator()
+        menu.add_command(label="Exit", command=self.close_app)
+        menubar.add_cascade(label="Menu", menu=menu)
+
+        self.master.config(menu=menubar)
+
         # IP and Port Frame
         ip_port_frame = tk.Frame(self, relief=tk.RAISED, bd=1)
         ip_port_frame.pack(side=tk.TOP, fill=tk.X)
@@ -146,10 +157,10 @@ class P2pChat(tk.Frame):
         msg_entry.focus()
         self.msg_entry = msg_entry
         
-        send_button = tk.Button(msg_entry_frame)
-        send_button["text"] = "Send"
-        send_button["command"] = self.send_msg
-        send_button.pack(side=tk.RIGHT)
+        send_btn = tk.Button(msg_entry_frame)
+        send_btn["text"] = "Send"
+        send_btn["command"] = self.send_msg
+        send_btn.pack(side=tk.RIGHT)
 
         # client connect to host button
         connect_btn = tk.Button(ip_port_frame)
@@ -161,6 +172,17 @@ class P2pChat(tk.Frame):
         if self.host_instr_label is not None:
             self.host_instr_label.pack_forget()
             self.host_instr_label = None
+
+    def prompt_new_name(self):
+        new_name = simpledialog.askstring("Name Change", "New name")
+        if new_name is not None:
+            self.request_name_change(new_name)
+
+    def request_name_change(self, new_name):
+        if self.chat is not None:
+            self.chat.send_msg("/nc " + new_name)
+        else:
+            self.show_sys_msg("Can't change name until connected to a host")
 
     def display_new_msg(self):
         if self.chat is not None:

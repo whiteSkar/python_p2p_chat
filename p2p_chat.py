@@ -26,13 +26,14 @@ class P2pChat(tk.Frame):
             self.ip_entry.delete(0, tk.END)
             self.ip_entry.insert(0, self.chat.host_ip)
             self.ip_entry.config(state='readonly')
+            self.ip_entry.bind('<FocusIn>', self.remove_host_instr)
             
             self.port_entry.delete(0, tk.END)
             self.port_entry.insert(0, self.chat.host_port)
             self.port_entry.config(state='readonly')
+            self.port_entry.bind('<FocusIn>', self.remove_host_instr)
 
             self.host_instr_label.pack(side=tk.LEFT)
-            # TODO: remove when connected. self.host_instr_label.pack_forget()
         else:
             self.chat = None
             self.ip_entry.insert(0, '0.0.0.0') 
@@ -131,17 +132,20 @@ class P2pChat(tk.Frame):
         msg_frame = tk.Frame(self)
         msg_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
-        self.msg_window = scrolledtext.ScrolledText(msg_frame, height=10, width=80)
-        self.msg_window.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
-        self.msg_window.config(state=tk.DISABLED)
-        
+        msg_window = scrolledtext.ScrolledText(msg_frame, height=10, width=80)
+        msg_window.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        msg_window.config(state=tk.DISABLED)
+        self.msg_window = msg_window
+
         # msg entry frame
         msg_entry_frame = tk.Frame(msg_frame, relief=tk.RAISED, bd=1)
         msg_entry_frame.pack(side=tk.BOTTOM, fill=tk.X, expand=1)
 
-        self.msg_entry = tk.Entry(msg_entry_frame)
-        self.msg_entry.pack(side=tk.LEFT, fill=tk.X, expand=1)
-
+        msg_entry = tk.Entry(msg_entry_frame)
+        msg_entry.pack(side=tk.LEFT, fill=tk.X, expand=1)
+        msg_entry.focus()
+        self.msg_entry = msg_entry
+        
         send_button = tk.Button(msg_entry_frame)
         send_button["text"] = "Send"
         send_button["command"] = self.send_msg
@@ -152,6 +156,11 @@ class P2pChat(tk.Frame):
         connect_btn["text"] = "Connect"
         connect_btn["command"] = self.connect_to_host
         self.connect_btn = connect_btn
+
+    def remove_host_instr(self, event=None):
+        if self.host_instr_label is not None:
+            self.host_instr_label.pack_forget()
+            self.host_instr_label = None
 
     def display_new_msg(self):
         if self.chat is not None:

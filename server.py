@@ -77,7 +77,7 @@ class Server(scb.ServerClientBase):
                 th = threading.Thread(target=self.recv_handler, kwargs={'sock': sock})
                 th.start()
             except Exception as e:
-                if e.errno == ECONNABORTED:
+                if e.errno == ECONNABORTED or e.errno == EBADF:
                     # User closed the program
                     break
                 
@@ -170,7 +170,6 @@ class Server(scb.ServerClientBase):
                 if e.errno == EBADF:    
                     # User closed the program
                     break
-
                 self.send_msg_as_sys_to_user(repr(e), self._host_user)
 
     def determine_msg_type(self, msg):

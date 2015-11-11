@@ -36,7 +36,6 @@ class P2pChat(tk.Frame):
             self.host_instr_label.pack(side=tk.LEFT)
         else:
             self.chat = None
-            self.ip_entry.insert(0, '0.0.0.0') 
             self.connect_btn.pack(side=tk.LEFT)
 
 

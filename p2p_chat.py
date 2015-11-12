@@ -1,8 +1,8 @@
 from tkinter import messagebox, scrolledtext, simpledialog
 
 import tkinter as tk
-import client
-import server
+import classes.client as client
+import classes.server as server
 import sys
 
 

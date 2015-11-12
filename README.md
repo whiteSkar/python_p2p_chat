@@ -1,6 +1,8 @@
 # python_p2p_chat
 Player to player desktop GUI chat application where one user becomes the host/server and other users can join the room as clients. Made in Python 3.4 and Tkinter.
 
+Just run "python p2p_chat.py" in the same directory as p2p_chat.py using Python 3.
+
 Note: You can't use this app to communicate with your friends outside of your network if the host is using a router (behind a NAT) as this app doesn't support NAT hole punching, yet.
 
 ### Features good to be added:

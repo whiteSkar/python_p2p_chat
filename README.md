@@ -1,8 +1,8 @@
 # python_p2p_chat
-Player to player desktop gui chat application where one user becomes the host/server and other users can join the room as clients. Made using Python and Tkinter.
+Player to player desktop GUI chat application where one user becomes the host/server and other users can join the room as clients. Made in Python 3.4 and Tkinter.
 
 
-Featurs good to be added:
+## Featurs good to be added:
 - Aggregate messages from the same user
 - Different colored user names for each user
 - Time of messages sent
@@ -11,7 +11,7 @@ Featurs good to be added:
 - Mutual authentication and encryption of data
 
 
-Possible code improvements:
+## Possible code improvements:
 - Use message header to indicate how many bytes are being sent
 - When pasting into ip and port entry while the content is selected, the validation logic should pass it if the resulting string is within the limit
 

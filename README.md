@@ -1,17 +1,19 @@
 # python_p2p_chat
 Player to player desktop GUI chat application where one user becomes the host/server and other users can join the room as clients. Made in Python 3.4 and Tkinter.
 
+Note: You can't use this app to communicate with your friends outside of your network if the host is using a router (behind a NAT) as this app doesn't support NAT hole punching, yet.
 
-## Featurs good to be added:
+### Features good to be added:
 - Aggregate messages from the same user
 - Different colored user names for each user
 - Time of messages sent
+- List showing joined users
 - Complete Korean support (Needs to upgrade Tkinter version)
 - Connect to host behind NAT (Needs a broker for NAT hole punching)
 - Mutual authentication and encryption of data
 
 
-## Possible code improvements:
+### Possible code improvements:
 - Use message header to indicate how many bytes are being sent
 - When pasting into ip and port entry while the content is selected, the validation logic should pass it if the resulting string is within the limit
 

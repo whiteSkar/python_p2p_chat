@@ -62,7 +62,8 @@ class P2pChat(tk.Frame):
             self.ip_entry.config(state='readonly')
             self.port_entry.config(state='readonly')
         except Exception as e:
-            self.show_sys_msg(repr(e))
+            msg = "Check the ip and port. Check host's firewall settings"
+            self.show_sys_msg(repr(e) + '\n' + msg)
    
     def validate_ip(self, ip):
         parts = ip.split('.')

@@ -10,7 +10,9 @@ class Client(scb.ServerClientBase):
         super().__init__()
 
         self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._s.settimeout(5)
         self._s.connect((host_ip, port))
+        self._s.settimeout(None)
 
         th = threading.Thread(target=self.recv_handler, kwargs={'sock':self._s})
         th.start()

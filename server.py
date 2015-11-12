@@ -37,7 +37,7 @@ class Server(scb.ServerClientBase):
         super().__init__()
 
         self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        ip = ''
+        ip = socket.gethostbyname(socket.gethostname())
         while True:
             try:
                 self._s.bind((ip, port))

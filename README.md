@@ -1,4 +1,7 @@
 # python_p2p_chat
+
+![demo](/demo.png)
+
 Player to player desktop GUI chat application where one user becomes the host/server and other users can join the room as clients. Made in Python 3.4 and Tkinter.
 
 Just run "python p2p_chat.py" in the same directory as p2p_chat.py using Python 3. You might need X server if using Windows.

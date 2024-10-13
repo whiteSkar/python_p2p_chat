@@ -5,6 +5,8 @@ Just run "python p2p_chat.py" in the same directory as p2p_chat.py using Python 
 
 Note: You can't use this app to communicate with your friends outside of your network if the host is using a router (behind a NAT) as this app doesn't support NAT hole punching, yet.
 
+Note: Currently, the python process just hangs when you exit the program. Go to your Task Manager (Ctrl + Alt + Del) to force close the Python application.
+
 ### Features good to be added:
 - Aggregate messages from the same user
 - Different colored user names for each user
